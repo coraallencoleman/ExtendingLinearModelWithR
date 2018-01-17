@@ -28,3 +28,32 @@ modt <- lm(sqrt(Species) ~ . , gala)
 plot(predict(modt),residuals(modt),xlab="Fitted",ylab="Residuals") #better variance
 summary(modt)
 ```
+
+Poisson Model
+```{r poisson}
+modp <- glm(Species ~ .,family=poisson, gala)
+summary(modp)
+```
+
+Check Poisson Model outliers
+```{r}
+halfnorm(residuals(modp)) #check if large deviance can be explained by an outlier
+```
+
+Check Poisson Assumptions
+For a Poisson distribution, mean is equal to variance.
+To estimate the variance for each value of mean, use (y-u_hat)^2
+```{r}
+plot(log(fitted(modp)),log((gala$Species-fitted(modp))^2), #fit (mean) vs logvariance
+  xlab=expression(hat(mu)),
+  ylab=expression((y-hat(mu))^2))
+abline(0,1) #line representing mean equal to variance (run in console)
+```
+Variance is generally larger than the mean. "When the variance assumption of the Poisson regression model is broken but the link function and choice of predictors is correct, the estimates of β are consistent, but the standard errors will be wrong. We cannot determine which predictors are statistically significant in the above model using the output we have." This is overdispersed. Add a dispersion parameter to fix this.
+
+After adding a dispersion parameter $\phi$, $\lambda$ is distributed as a gamma random variance with mean $\mu$ and variance $\frac{\mu}{\phi}$. The outcome y is distributed as negative binomial with mean = $\mu$ and variance = $y = \frac{\mu(1+\phi)}{\phi}$. This accounts for the overdispersion we see. We can estimate this dispersion parameter.
+
+Accounting for Overdispersion
+```{r overdispersion}
+
+```
