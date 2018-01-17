@@ -55,5 +55,62 @@ After adding a dispersion parameter $\phi$, $\lambda$ is distributed as a gamma 
 
 Accounting for Overdispersion
 ```{r overdispersion}
+(dp <-sum(residuals(modp,type="pearson")^2)/modp$df.res) #estimate phi
+summary (modp, dispersion=dp)
+```
+"the estimation of the dispersion and the regression parameters is independent" To compare Poisson models with overdispersion, use F test rather than chi square test.
 
+Rate Models
+modeling ratios
+```{r read in data}
+data(dicentric)
+round(xtabs(ca/cells ~ doseamt+doserate, dicentric),2)
+with(dicentric,interaction.plot(doseamt,doserate,ca/cells))
+```
+abnormalities/total cells
+
+Linear Model for Rate Outcome
+```{r}
+lmod <- lm(ca/cells ~ log(doserate)*factor(doseamt), dicentric)
+summary(lmod)
+#diagnostics
+plot(residuals(lmod) ~ fitted(lmod),xlab="Fitted",ylab="Residuals")
+abline(h=0) #run in console
+```
+Diagnostic plot shows residuals increasing as fitted values increase.
+
+Directly Model Count Response
+```{r}
+dicentric$dosef <- factor(dicentric$doseamt)
+pmod <- glm(ca ~ log(cells)+log(doserate)*dosef, family=poisson, dicentric)
+summary(pmod)
+```
+this uses log(cells) as a predictor. Because the coefficient for log(cells) is close to 1, we could keep this constant by using it as an offset
+
+Rate Model with Offset
+```{r offset model}
+rmod <- glm(ca ~ offset(log(cells))+log(doserate)*dosef, family=poisson,dicentric)
+summary(rmod)
+```
+
+Negative Binomial
+"arises from the generalization of the Poisson where the parameter λ is gamma distributed."
+```{r poisson}
+data(solder)
+soldmodp <- glm(skips ~ . , family=poisson, data=solder)
+deviance(soldmodp)
+df.residual(soldmodp)
+
+#adding interactions
+modp2 <- glm(skips ~ (Opening +Solder + Mask + PadType + Panel)^2, family=poisson, data=solder)
+deviance(modp2) #deviance still too large
+pchisq(deviance(modp2),df.residual(modp2),lower=FALSE)
+```
+
+```{r neg binomial model}
+library(MASS)
+modnb <- glm(skips ~ . , negative.binomial(1),solder); modnb
+#allow k to vary
+modnb <- glm.nb(skips ~ .,solder)
+summary(modnb)
 ```
