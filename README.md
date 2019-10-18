@@ -6,4 +6,4 @@ Ch 1 Introduction
 Ch 2 Binomial Data
 Ch 3 Counting Regression
 
-For data, load the faraway package
+Data available in faraway package.

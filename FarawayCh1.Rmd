@@ -1,0 +1,74 @@
+---
+title: "Extending the Linear Model with R Ch 1"
+author: "Cora Allen-Coleman"
+date: "1/26/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(faraway)
+```
+
+```{r }
+data(gavote)
+help(gavote)
+
+help(quantile)
+head(gavote)
+summary(gavote)
+gavote$undercount <- (gavote$ballots-gavote$votes)/gavote$ballots
+summary(gavote$undercount)
+sum(gavote$ballots-gavote$votes)/sum(gavote$ballots)
+
+hist(gavote$undercount,main="Undercount",xlab="Percent
+Undercount")
+plot (density (gavote$undercount), main="Undercount")
+rug(gavote$undercount)
+pie(table(gavote$equip), col=gray(0:4/4))
+barplot(sort(table(gavote$equip),
+decreasing=TRUE),las=2)
+gavote$pergore <- gavote$gore/gavote$votes
+plot(pergore ~ perAA, gavote, xlab="Proportion
+African American", ylab="Proportion for Gore")
+plot(undercount ~ equip, gavote, xlab=" ", las=3)
+
+xtabs (~ atlanta + rural, gavote)
+nix <- c(3,10,11,12)
+cor(gavote[,nix])
+
+```
+
+##Models
+```{r models}
+lmod <- lm(undercount ~ pergore+perAA, gavote)
+coef(lmod)
+predict(lmod) #fitted values
+residuals(lmod)
+deviance(lmod)
+df.residual(lmod)
+nrow(gavote) - length(coef(lmod))
+lmodsum <- summary(lmod)
+lmodsum$sigma
+lmodsum$r.squared
+cor(predict(lmod), gavote$undercount)^2
+
+contr.treatment(5)
+gavote$cpergore <- gavote$pergore -mean(gavote$pergore)
+gavote$cperAA <- gavote$perAA - mean (gavote$perAA)
+lmodi <- lm(undercount ~ cperAA+cpergore*rural+equip,gavote)
+summary(lmodi)
+```
+##Comparing Models
+```{r}
+confint(lmodi)
+plot(lmodi)
+```
+
+##Weighted Least Squares
+```{r}
+wlmodi <- lm(undercount ~ cperAA+cpergore*rural+equip, gavote, weights=ballots)
+summary(wlmodi)
+```
+
+
